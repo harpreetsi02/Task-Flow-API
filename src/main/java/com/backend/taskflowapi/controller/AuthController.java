@@ -1,6 +1,8 @@
 package com.backend.taskflowapi.controller;
 
+import com.backend.taskflowapi.dto.request.LoginRequest;
 import com.backend.taskflowapi.dto.request.RegisterRequest;
+import com.backend.taskflowapi.dto.response.LoginResponse;
 import com.backend.taskflowapi.dto.response.UserResponse;
 import com.backend.taskflowapi.service.AuthService;
 import jakarta.validation.Valid;
@@ -32,5 +34,15 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request
+    ) {
+        LoginResponse response =
+                authService.login(request);
+
+        return ResponseEntity.ok(response);
     }
 }
