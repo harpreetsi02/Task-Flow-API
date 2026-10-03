@@ -28,7 +28,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("userId", user.getId())
-                .claim("role", user.getRole())
+                .claim("role", user.getRole().name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(getSigningKey())
@@ -36,11 +36,11 @@ public class JwtService {
     }
 
     public String extractEmail(String token){
-        return getAllClaims(token).getSubject();
+        return extractAllClaims(token).getSubject();
     }
 
     public Long extractUserId(String token){
-        return getAllClaims(token).get("userId", Long.class);
+        return extractAllClaims(token).get("userId", Long.class);
     }
 
     public boolean isTokenValid(String token, String userEmail){
@@ -53,10 +53,10 @@ public class JwtService {
     }
 
     private Date extractExpiration(String token){
-        return getAllClaims(token).getExpiration();
+        return extractAllClaims(token).getExpiration();
     }
 
-    private Claims getAllClaims(String token){
+    private Claims extractAllClaims(String token){
 
         return Jwts.parser()
                 .verifyWith(getSigningKey())
