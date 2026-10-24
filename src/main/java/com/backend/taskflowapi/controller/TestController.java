@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/test")
+@RequestMapping("/api/test")
 public class TestController {
 
     @GetMapping("/protected")
-    public ResponseEntity<String> protectedEndpoint(){
-        return ResponseEntity.ok("If you see, your jwt worked!");
+    public ResponseEntity<String> protectedEndpoint() {
+        return ResponseEntity.ok("If you see this, your JWT worked!");
     }
 }

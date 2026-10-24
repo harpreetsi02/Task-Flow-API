@@ -2,6 +2,7 @@ package com.backend.taskflowapi.exception;
 
 import com.backend.taskflowapi.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -59,6 +59,42 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleInvalidCredentials(
             InvalidCredentialsException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(response);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(
+            UserNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(
+            InvalidRefreshTokenException exception,
             HttpServletRequest request
     ) {
         ErrorResponse response = new ErrorResponse(

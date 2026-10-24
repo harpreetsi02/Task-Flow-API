@@ -1,6 +1,7 @@
 package com.backend.taskflowapi.controller;
 
 import com.backend.taskflowapi.dto.request.LoginRequest;
+import com.backend.taskflowapi.dto.request.RefreshTokenRequest;
 import com.backend.taskflowapi.dto.request.RegisterRequest;
 import com.backend.taskflowapi.dto.response.LoginResponse;
 import com.backend.taskflowapi.dto.response.UserResponse;
@@ -8,10 +9,7 @@ import com.backend.taskflowapi.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -27,7 +25,6 @@ public class AuthController {
     public ResponseEntity<UserResponse> register(
             @Valid @RequestBody RegisterRequest request
     ) {
-
         UserResponse response =
                 authService.register(request);
 
@@ -42,6 +39,26 @@ public class AuthController {
     ) {
         LoginResponse response =
                 authService.login(request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody RefreshTokenRequest request
+    ) {
+        String accessToken = authHeader.substring(7);
+        authService.logout(accessToken, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(
+            @Valid @RequestBody RefreshTokenRequest request
+    ) {
+        LoginResponse response =
+                authService.refreshToken(request);
 
         return ResponseEntity.ok(response);
     }

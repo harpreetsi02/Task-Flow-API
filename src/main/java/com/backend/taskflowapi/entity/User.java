@@ -12,13 +12,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String fullName;
-
     @Column(nullable = false, unique = true)
     private String email;
 
     private String password;
+
+    @Column(nullable = false)
+    private String fullName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -29,28 +29,27 @@ public class User {
     private AuthProvider provider;
 
     @Column(nullable = false)
-    private boolean enable = true;
+    private boolean enabled = true;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate(){
-        this.createdAt = LocalDateTime.now();
-    }
-
     public User(){}
 
     public User(
-            String fullName, String email,
-            String password, Role role,
-            AuthProvider provider
+            String email, String password, String fullName,
+            Role role, AuthProvider provider
     ) {
-        this.fullName = fullName;
         this.email = email;
         this.password = password;
+        this.fullName = fullName;
         this.role = role;
         this.provider = provider;
+    }
+
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -97,12 +96,12 @@ public class User {
         this.provider = provider;
     }
 
-    public boolean isEnable() {
-        return enable;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setEnable(boolean enable) {
-        this.enable = enable;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public LocalDateTime getCreatedAt() {

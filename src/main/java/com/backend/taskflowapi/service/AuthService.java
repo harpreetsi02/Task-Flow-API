@@ -1,54 +1,67 @@
 package com.backend.taskflowapi.service;
 
 import com.backend.taskflowapi.dto.request.LoginRequest;
+import com.backend.taskflowapi.dto.request.RefreshTokenRequest;
 import com.backend.taskflowapi.dto.request.RegisterRequest;
 import com.backend.taskflowapi.dto.response.LoginResponse;
 import com.backend.taskflowapi.dto.response.UserResponse;
 import com.backend.taskflowapi.entity.AuthProvider;
+import com.backend.taskflowapi.entity.RefreshToken;
 import com.backend.taskflowapi.entity.Role;
 import com.backend.taskflowapi.entity.User;
 import com.backend.taskflowapi.exception.EmailAlreadyExistsException;
 import com.backend.taskflowapi.exception.InvalidCredentialsException;
+import com.backend.taskflowapi.exception.InvalidRefreshTokenException;
 import com.backend.taskflowapi.mapper.UserMapper;
+import com.backend.taskflowapi.repository.RefreshTokenRepository;
 import com.backend.taskflowapi.repository.UserRepository;
 import com.backend.taskflowapi.security.JwtService;
+import com.backend.taskflowapi.security.TokenBlacklistService;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
     private final JwtService jwtService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public AuthService(
             UserRepository userRepository,
-            UserMapper userMapper,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            UserMapper userMapper,
+            JwtService jwtService,
+            RefreshTokenRepository refreshTokenRepository,
+            TokenBlacklistService tokenBlacklistService
     ) {
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
         this.jwtService = jwtService;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Transactional
     public UserResponse register(RegisterRequest request){
-
         String email = request.email().trim().toLowerCase();
 
-        if (userRepository.existsByEmail(email)) {
+        if (userRepository.existsByEmail(email)){
             throw new EmailAlreadyExistsException(email);
         }
 
         User user = new User(
-                request.fullName().trim(),
-                request.email(),
+                email,
                 passwordEncoder.encode(request.password()),
+                request.fullName(),
                 Role.USER,
                 AuthProvider.LOCAL
         );
@@ -70,7 +83,61 @@ public class AuthService {
         }
 
         String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = createAndSaveRefreshToken(user);
 
-        return new LoginResponse(accessToken, userMapper.toResponse(user));
+        return new LoginResponse(accessToken, refreshToken, userMapper.toResponse(user));
+    }
+
+    @Transactional
+    public void logout(String accessToken, RefreshTokenRequest request){
+        long expiryMillis = jwtService.extractExpiration(accessToken).getTime();
+        tokenBlacklistService.blacklist(accessToken, expiryMillis);
+
+        refreshTokenRepository.findByToken(request.refreshToken())
+                .ifPresent(token -> {
+                    token.setRevoked(true);
+                    refreshTokenRepository.save(token);
+                });
+    }
+
+    @Transactional
+    public LoginResponse refreshToken(RefreshTokenRequest request){
+        RefreshToken storedToken = refreshTokenRepository.findByToken(request.refreshToken())
+                .orElseThrow(() -> new InvalidRefreshTokenException(
+                        "Refresh token not found!"
+                ));
+
+        if (storedToken.isRevoked()){
+            throw new InvalidRefreshTokenException("Refresh token has been revoked!");
+        }
+
+        if (storedToken.getExpiredAt().isBefore(LocalDateTime.now())){
+            throw new InvalidRefreshTokenException("Refresh token has expired!");
+        }
+
+        User user = storedToken.getUser();
+
+        storedToken.setRevoked(true);
+        refreshTokenRepository.save(storedToken);
+
+        String newAccessToken = jwtService.generateAccessToken(user);
+        String newRefreshToken = createAndSaveRefreshToken(user);
+
+        return new LoginResponse(newAccessToken, newRefreshToken, userMapper.toResponse(user));
+
+    }
+
+    private String createAndSaveRefreshToken(User user){
+        String token = jwtService.generateRefreshToken(user);
+
+        RefreshToken refreshToken = new RefreshToken(
+                token,
+                user,
+                LocalDateTime.now().plusDays(7)
+        );
+
+        refreshTokenRepository.save(refreshToken);
+
+        return token;
     }
 }
