@@ -16,6 +16,7 @@ import com.backend.taskflowapi.mapper.UserMapper;
 import com.backend.taskflowapi.repository.RefreshTokenRepository;
 import com.backend.taskflowapi.repository.UserRepository;
 import com.backend.taskflowapi.security.JwtService;
+import com.backend.taskflowapi.security.RefreshTokenAuthHelper;
 import com.backend.taskflowapi.security.TokenBlacklistService;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +34,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenBlacklistService tokenBlacklistService;
+    private final RefreshTokenAuthHelper refreshTokenAuthHelper;
 
     public AuthService(
             UserRepository userRepository,
@@ -40,7 +42,8 @@ public class AuthService {
             UserMapper userMapper,
             JwtService jwtService,
             RefreshTokenRepository refreshTokenRepository,
-            TokenBlacklistService tokenBlacklistService
+            TokenBlacklistService tokenBlacklistService,
+            RefreshTokenAuthHelper refreshTokenAuthHelper
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -48,6 +51,7 @@ public class AuthService {
         this.jwtService = jwtService;
         this.refreshTokenRepository = refreshTokenRepository;
         this.tokenBlacklistService = tokenBlacklistService;
+        this.refreshTokenAuthHelper = refreshTokenAuthHelper;
     }
 
     @Transactional
@@ -83,7 +87,7 @@ public class AuthService {
         }
 
         String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = createAndSaveRefreshToken(user);
+        String refreshToken = refreshTokenAuthHelper.createAndSaveRefreshToken(user);
 
         return new LoginResponse(accessToken, refreshToken, userMapper.toResponse(user));
     }
@@ -121,23 +125,9 @@ public class AuthService {
         refreshTokenRepository.save(storedToken);
 
         String newAccessToken = jwtService.generateAccessToken(user);
-        String newRefreshToken = createAndSaveRefreshToken(user);
+        String newRefreshToken = refreshTokenAuthHelper.createAndSaveRefreshToken(user);
 
         return new LoginResponse(newAccessToken, newRefreshToken, userMapper.toResponse(user));
 
-    }
-
-    private String createAndSaveRefreshToken(User user){
-        String token = jwtService.generateRefreshToken(user);
-
-        RefreshToken refreshToken = new RefreshToken(
-                token,
-                user,
-                LocalDateTime.now().plusDays(7)
-        );
-
-        refreshTokenRepository.save(refreshToken);
-
-        return token;
     }
 }
