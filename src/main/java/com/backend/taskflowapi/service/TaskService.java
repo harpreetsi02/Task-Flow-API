@@ -19,6 +19,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final OrganizationRepository organizationRepository;
     private final OrganizationAuthorizationService authorizationService;
+    private final WebhookDispatchService webhookDispatchService;
     private final MembershipRepository membershipRepository;
     private final UserRepository userRepository;
     private final TaskMapper taskMapper;
@@ -28,6 +29,7 @@ public class TaskService {
             ProjectRepository projectRepository,
             OrganizationRepository organizationRepository,
             OrganizationAuthorizationService authorizationService,
+            WebhookDispatchService webhookDispatchService,
             MembershipRepository membershipRepository,
             UserRepository userRepository,
             TaskMapper taskMapper
@@ -36,13 +38,17 @@ public class TaskService {
         this.projectRepository = projectRepository;
         this.organizationRepository = organizationRepository;
         this.authorizationService = authorizationService;
+        this.webhookDispatchService = webhookDispatchService;
         this.membershipRepository = membershipRepository;
         this.userRepository = userRepository;
         this.taskMapper = taskMapper;
     }
 
     @Transactional
-    public TaskResponse createTask(Long organizationId, Long projectId, CreateTaskRequest request, User currentUser){
+    public TaskResponse createTask(
+            Long organizationId, Long projectId,
+            CreateTaskRequest request, User currentUser
+    ){
         Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization not found with id: " + organizationId));
 
@@ -72,7 +78,10 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponse updateTask(Long organizationId, Long projectId, Long taskId, UpdateTaskRequest request, User currentUser){
+    public TaskResponse updateTask(
+            Long organizationId, Long projectId,
+            Long taskId, UpdateTaskRequest request, User currentUser
+    ){
         Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization is not found with id: " + organizationId));
 
@@ -83,6 +92,8 @@ public class TaskService {
 
         Task task = taskRepository.findByIdAndProject(taskId, project)
                 .orElseThrow(() -> new TaskNotFoundException(taskId));
+
+        TaskStatus previousTask = task.getStatus();
 
         task.setTitle(request.title());
         task.setDescription(request.description());
@@ -97,10 +108,17 @@ public class TaskService {
             task.setAssignee(null);
         }
 
+        if (previousTask != TaskStatus.DONE && task.getStatus() == TaskStatus.DONE){
+            webhookDispatchService.dispatchTaskCompleted(task);
+        }
+
         return taskMapper.toResponse(task);
     }
 
-    public Page<TaskResponse> getTasks(Long organizationId, Long projectId, TaskStatus status, User currentUser, Pageable pageable){
+    public Page<TaskResponse> getTasks(
+            Long organizationId, Long projectId,
+            TaskStatus status, User currentUser, Pageable pageable
+    ){
         Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization not found with id: " + organizationId));
 
@@ -114,7 +132,10 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTask(Long organizationId, Long projectId, Long taskId, User currentUser){
+    public void deleteTask(
+            Long organizationId, Long projectId,
+            Long taskId, User currentUser
+    ){
         Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization not found with id: " + organizationId));
 

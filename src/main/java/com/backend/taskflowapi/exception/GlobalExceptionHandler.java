@@ -182,6 +182,24 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(WebhookNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWebhookNotFound(
+            WebhookNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
+
     @ExceptionHandler(AlreadyMemberException.class)
     public ResponseEntity<ErrorResponse> handleAlreadyMember(
             AlreadyMemberException exception,
