@@ -2,7 +2,7 @@ package com.backend.taskflowapi.repository;
 
 import com.backend.taskflowapi.entity.Project;
 import com.backend.taskflowapi.entity.Task;
-import com.backend.taskflowapi.entity.TaskStatus;
+import com.backend.taskflowapi.enums.TaskStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

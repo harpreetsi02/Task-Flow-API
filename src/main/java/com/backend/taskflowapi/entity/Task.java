@@ -1,5 +1,7 @@
 package com.backend.taskflowapi.entity;
 
+import com.backend.taskflowapi.enums.TaskPriority;
+import com.backend.taskflowapi.enums.TaskStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;

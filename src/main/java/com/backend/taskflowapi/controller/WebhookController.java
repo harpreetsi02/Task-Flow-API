@@ -1,6 +1,7 @@
 package com.backend.taskflowapi.controller;
 
 import com.backend.taskflowapi.dto.request.CreateWebhookRequest;
+import com.backend.taskflowapi.dto.request.UpdateWebhookStatusRequest;
 import com.backend.taskflowapi.dto.response.WebhookResponse;
 import com.backend.taskflowapi.security.CustomUserDetails;
 import com.backend.taskflowapi.service.WebhookSubscriptionService;
@@ -45,5 +46,29 @@ public class WebhookController {
                 webhookSubscriptionService.getWebhooks(organizationId, userDetails.getUser());
 
         return ResponseEntity.ok(responses);
+    }
+
+    @DeleteMapping("/{webhookId}")
+    public ResponseEntity<Void> deleteWebhook(
+            @PathVariable Long organizationId,
+            @PathVariable Long webhookId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        webhookSubscriptionService.deleteWebhook(organizationId, webhookId, userDetails.getUser());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{webhookId}")
+    public ResponseEntity<WebhookResponse> updateWebhookStatus(
+            @PathVariable Long organizationId,
+            @PathVariable Long webhookId,
+            @Valid @RequestBody UpdateWebhookStatusRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        WebhookResponse response =
+                webhookSubscriptionService.updateWebhookStatus(organizationId, webhookId, request, userDetails.getUser());
+
+        return ResponseEntity.ok(response);
     }
 }

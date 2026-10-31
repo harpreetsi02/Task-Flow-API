@@ -1,8 +1,8 @@
 package com.backend.taskflowapi.security;
 
 import com.backend.taskflowapi.dto.response.LoginResponse;
-import com.backend.taskflowapi.entity.AuthProvider;
-import com.backend.taskflowapi.entity.Role;
+import com.backend.taskflowapi.enums.AuthProvider;
+import com.backend.taskflowapi.enums.Role;
 import com.backend.taskflowapi.entity.User;
 import com.backend.taskflowapi.repository.UserRepository;
 //import com.fasterxml.jackson.databind.ObjectMapper;

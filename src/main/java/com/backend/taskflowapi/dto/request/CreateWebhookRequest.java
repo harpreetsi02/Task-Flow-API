@@ -1,7 +1,6 @@
 package com.backend.taskflowapi.dto.request;
 
-import com.backend.taskflowapi.entity.WebhookEvenType;
-import jakarta.persistence.Column;
+import com.backend.taskflowapi.enums.WebhookEvenType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;

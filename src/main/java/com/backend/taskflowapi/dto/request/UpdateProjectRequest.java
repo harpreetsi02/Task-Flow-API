@@ -1,11 +1,11 @@
 package com.backend.taskflowapi.dto.request;
 
-import com.backend.taskflowapi.entity.ProjectStatus;
+import com.backend.taskflowapi.enums.ProjectStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record UpdateProjectRequest(
+public record   UpdateProjectRequest(
 
         @NotBlank(message = "Project name is required!")
         @Size(max = 150, message = "Name must be at most 150 characters!")

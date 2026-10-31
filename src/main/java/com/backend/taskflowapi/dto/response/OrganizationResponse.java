@@ -1,6 +1,6 @@
 package com.backend.taskflowapi.dto.response;
 
-import com.backend.taskflowapi.entity.OrgRole;
+import com.backend.taskflowapi.enums.OrgRole;
 
 import java.time.LocalDateTime;
 

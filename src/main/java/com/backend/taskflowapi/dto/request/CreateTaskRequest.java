@@ -1,6 +1,6 @@
 package com.backend.taskflowapi.dto.request;
 
-import com.backend.taskflowapi.entity.TaskPriority;
+import com.backend.taskflowapi.enums.TaskPriority;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 

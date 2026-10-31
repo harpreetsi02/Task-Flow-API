@@ -1,6 +1,6 @@
 package com.backend.taskflowapi.dto.request;
 
-import com.backend.taskflowapi.entity.OrgRole;
+import com.backend.taskflowapi.enums.OrgRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

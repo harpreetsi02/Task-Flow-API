@@ -1,5 +1,7 @@
 package com.backend.taskflowapi.entity;
 
+import com.backend.taskflowapi.enums.AuthProvider;
+import com.backend.taskflowapi.enums.Role;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;

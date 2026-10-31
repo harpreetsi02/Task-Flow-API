@@ -3,7 +3,7 @@ package com.backend.taskflowapi.controller;
 import com.backend.taskflowapi.dto.request.CreateTaskRequest;
 import com.backend.taskflowapi.dto.request.UpdateTaskRequest;
 import com.backend.taskflowapi.dto.response.TaskResponse;
-import com.backend.taskflowapi.entity.TaskStatus;
+import com.backend.taskflowapi.enums.TaskStatus;
 import com.backend.taskflowapi.security.CustomUserDetails;
 import com.backend.taskflowapi.service.TaskService;
 import jakarta.validation.Valid;

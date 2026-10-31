@@ -3,7 +3,7 @@ package com.backend.taskflowapi.service;
 import com.backend.taskflowapi.dto.request.CreateProjectRequest;
 import com.backend.taskflowapi.dto.request.UpdateProjectRequest;
 import com.backend.taskflowapi.dto.response.ProjectResponse;
-import com.backend.taskflowapi.entity.OrgRole;
+import com.backend.taskflowapi.enums.OrgRole;
 import com.backend.taskflowapi.entity.Organization;
 import com.backend.taskflowapi.entity.Project;
 import com.backend.taskflowapi.entity.User;

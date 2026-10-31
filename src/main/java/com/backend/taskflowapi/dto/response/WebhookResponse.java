@@ -1,6 +1,6 @@
 package com.backend.taskflowapi.dto.response;
 
-import com.backend.taskflowapi.entity.WebhookEvenType;
+import com.backend.taskflowapi.enums.WebhookEvenType;
 
 import java.time.LocalDateTime;
 

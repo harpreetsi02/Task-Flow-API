@@ -1,4 +1,4 @@
-package com.backend.taskflowapi.entity;
+package com.backend.taskflowapi.enums;
 
 public enum AuthProvider {
     LOCAL,

@@ -1,7 +1,7 @@
 package com.backend.taskflowapi.dto.response;
 
-import com.backend.taskflowapi.entity.TaskPriority;
-import com.backend.taskflowapi.entity.TaskStatus;
+import com.backend.taskflowapi.enums.TaskPriority;
+import com.backend.taskflowapi.enums.TaskStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

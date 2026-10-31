@@ -1,14 +1,17 @@
 package com.backend.taskflowapi.service;
 
 import com.backend.taskflowapi.dto.request.CreateWebhookRequest;
+import com.backend.taskflowapi.dto.request.UpdateWebhookStatusRequest;
 import com.backend.taskflowapi.dto.response.WebhookResponse;
-import com.backend.taskflowapi.entity.OrgRole;
+import com.backend.taskflowapi.enums.OrgRole;
 import com.backend.taskflowapi.entity.Organization;
 import com.backend.taskflowapi.entity.User;
 import com.backend.taskflowapi.entity.WebhookSubscription;
 import com.backend.taskflowapi.exception.OrganizationNotFoundException;
+import com.backend.taskflowapi.exception.WebhookNotFoundException;
 import com.backend.taskflowapi.mapper.WebhookMapper;
 import com.backend.taskflowapi.repository.OrganizationRepository;
+import com.backend.taskflowapi.repository.WebhookDeliveryRepository;
 import com.backend.taskflowapi.repository.WebhookSubscriptionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -22,17 +25,20 @@ public class WebhookSubscriptionService {
     private final WebhookSubscriptionRepository webhookSubscriptionRepository;
     private final OrganizationRepository organizationRepository;
     private final OrganizationAuthorizationService authorizationService;
+    private final WebhookDeliveryRepository webhookDeliveryRepository;
     private final WebhookMapper webhookMapper;
 
     public WebhookSubscriptionService(
             WebhookSubscriptionRepository webhookSubscriptionRepository,
             OrganizationRepository organizationRepository,
             OrganizationAuthorizationService authorizationService,
+            WebhookDeliveryRepository webhookDeliveryRepository,
             WebhookMapper webhookMapper
     ) {
         this.webhookSubscriptionRepository = webhookSubscriptionRepository;
         this.organizationRepository = organizationRepository;
         this.authorizationService = authorizationService;
+        this.webhookDeliveryRepository = webhookDeliveryRepository;
         this.webhookMapper = webhookMapper;
     }
 
@@ -64,5 +70,41 @@ public class WebhookSubscriptionService {
                 .stream()
                 .map(webhookMapper::toResponse)
                 .toList();
+    }
+
+    @Transactional
+    public void deleteWebhook(Long organizationId, Long webhookId, User currentUser){
+        Organization organization = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> new OrganizationNotFoundException("Organization not found with id: " + organizationId));
+
+        authorizationService.requireRole(
+                currentUser, organization, Set.of(OrgRole.ADMIN, OrgRole.OWNER)
+        );
+
+        WebhookSubscription subscription = webhookSubscriptionRepository.findByIdAndOrganization(webhookId, organization)
+                .orElseThrow(() -> new WebhookNotFoundException(webhookId));
+
+        webhookDeliveryRepository.deleteBySubscription(subscription);
+        webhookSubscriptionRepository.delete(subscription);
+    }
+
+    @Transactional
+    public WebhookResponse updateWebhookStatus(
+            Long organizationId, Long webhookId,
+            UpdateWebhookStatusRequest request, User currentUser
+    ) {
+        Organization organization = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> new OrganizationNotFoundException("Organization not found with id: " + organizationId));
+
+        authorizationService.requireRole(
+                currentUser, organization, Set.of(OrgRole.ADMIN, OrgRole.OWNER)
+        );
+
+        WebhookSubscription subscription = webhookSubscriptionRepository.findByIdAndOrganization(webhookId, organization)
+                .orElseThrow(() -> new WebhookNotFoundException(webhookId));
+
+        subscription.setActive(request.active());
+
+        return webhookMapper.toResponse(subscription);
     }
 }

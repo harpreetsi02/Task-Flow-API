@@ -5,9 +5,9 @@ import com.backend.taskflowapi.dto.request.RefreshTokenRequest;
 import com.backend.taskflowapi.dto.request.RegisterRequest;
 import com.backend.taskflowapi.dto.response.LoginResponse;
 import com.backend.taskflowapi.dto.response.UserResponse;
-import com.backend.taskflowapi.entity.AuthProvider;
+import com.backend.taskflowapi.enums.AuthProvider;
 import com.backend.taskflowapi.entity.RefreshToken;
-import com.backend.taskflowapi.entity.Role;
+import com.backend.taskflowapi.enums.Role;
 import com.backend.taskflowapi.entity.User;
 import com.backend.taskflowapi.exception.EmailAlreadyExistsException;
 import com.backend.taskflowapi.exception.InvalidCredentialsException;
@@ -23,7 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Service
 public class AuthService {

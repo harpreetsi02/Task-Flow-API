@@ -1,5 +1,6 @@
 package com.backend.taskflowapi.entity;
 
+import com.backend.taskflowapi.enums.WebhookEvenType;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;

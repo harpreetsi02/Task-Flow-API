@@ -2,14 +2,15 @@ package com.backend.taskflowapi.service;
 
 import com.backend.taskflowapi.entity.Organization;
 import com.backend.taskflowapi.entity.Task;
-import com.backend.taskflowapi.entity.WebhookEvenType;
+import com.backend.taskflowapi.entity.WebhookDelivery;
 import com.backend.taskflowapi.entity.WebhookSubscription;
+import com.backend.taskflowapi.enums.WebhookEvenType;
+import com.backend.taskflowapi.repository.WebhookDeliveryRepository;
 import com.backend.taskflowapi.repository.WebhookSubscriptionRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -17,44 +18,50 @@ import java.util.Map;
 @Service
 public class WebhookDispatchService {
 
-    private final static Logger log = LoggerFactory.getLogger(WebhookDispatchService.class);
-
     private final WebhookSubscriptionRepository webhookSubscriptionRepository;
-    private final RestTemplate restTemplate;
+    private final WebhookDeliveryRepository webhookDeliveryRepository;
+    private final ObjectMapper objectMapper;
+
 
     public WebhookDispatchService(
             WebhookSubscriptionRepository webhookSubscriptionRepository,
-            RestTemplate restTemplate
+            WebhookDeliveryRepository webhookDeliveryRepository,
+            ObjectMapper objectMapper
     ) {
         this.webhookSubscriptionRepository = webhookSubscriptionRepository;
-        this.restTemplate = restTemplate;
+        this.webhookDeliveryRepository = webhookDeliveryRepository;
+        this.objectMapper = objectMapper;
     }
 
-    @Async
+    @Transactional
     public void dispatchTaskCompleted(Task task){
         Organization organization = task.getProject().getOrganization();
 
         List<WebhookSubscription> subscriptions = webhookSubscriptionRepository
                 .findByOrganizationAndEvenTypeAndActiveTrue(organization, WebhookEvenType.TASK_COMPLETED);
 
+        if (subscriptions.isEmpty()){
+            return;
+        }
+
+
+        String payload = buildPayload(task);
+
         for (WebhookSubscription subscription : subscriptions){
-            sendWebhook(subscription, task);
+            webhookDeliveryRepository.save(
+                    new WebhookDelivery(subscription, WebhookEvenType.TASK_COMPLETED, payload)
+            );
         }
     }
 
-    private void sendWebhook(WebhookSubscription subscription, Task task){
-        Map<String, Object> payload = Map.of(
+    private String buildPayload(Task task){
+        Map<String, Object> data = Map.of(
                 "event", "TASK_COMPLETED",
                 "taskId", task.getId(),
                 "taskTitle", task.getTitle(),
                 "projectId", task.getProject().getId()
         );
 
-        try {
-            restTemplate.postForEntity(subscription.getTargetUrl(), payload, String.class);
-            log.info("Webhook delivered successfully to {}", subscription.getTargetUrl());
-        } catch (Exception e){
-            log.info("Webhook delivery failed for {}: {}", subscription.getTargetUrl(), e.getMessage());
-        }
+        return objectMapper.writeValueAsString(data);
     }
 }

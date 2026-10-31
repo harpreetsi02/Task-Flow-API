@@ -1,6 +1,6 @@
 package com.backend.taskflowapi.dto.response;
 
-import com.backend.taskflowapi.entity.ProjectStatus;
+import com.backend.taskflowapi.enums.ProjectStatus;
 
 import java.time.LocalDateTime;
 

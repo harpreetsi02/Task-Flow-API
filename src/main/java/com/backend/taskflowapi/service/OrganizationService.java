@@ -4,7 +4,7 @@ import com.backend.taskflowapi.dto.request.CreateOrganizationRequest;
 import com.backend.taskflowapi.dto.request.InviteMemberRequest;
 import com.backend.taskflowapi.dto.response.OrganizationResponse;
 import com.backend.taskflowapi.entity.Membership;
-import com.backend.taskflowapi.entity.OrgRole;
+import com.backend.taskflowapi.enums.OrgRole;
 import com.backend.taskflowapi.entity.Organization;
 import com.backend.taskflowapi.entity.User;
 import com.backend.taskflowapi.exception.*;

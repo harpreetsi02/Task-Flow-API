@@ -1,7 +1,7 @@
 package com.backend.taskflowapi.repository;
 
 import com.backend.taskflowapi.entity.Organization;
-import com.backend.taskflowapi.entity.WebhookEvenType;
+import com.backend.taskflowapi.enums.WebhookEvenType;
 import com.backend.taskflowapi.entity.WebhookSubscription;
 import org.springframework.data.jpa.repository.JpaRepository;
 
