@@ -3,7 +3,9 @@ package com.backend.taskflowapi.controller;
 import com.backend.taskflowapi.dto.request.CreateTaskRequest;
 import com.backend.taskflowapi.dto.request.UpdateTaskRequest;
 import com.backend.taskflowapi.dto.response.TaskResponse;
+import com.backend.taskflowapi.dto.response.TaskResult;
 import com.backend.taskflowapi.enums.TaskStatus;
+import com.backend.taskflowapi.mapper.TaskMapper;
 import com.backend.taskflowapi.security.CustomUserDetails;
 import com.backend.taskflowapi.service.TaskService;
 import jakarta.validation.Valid;
@@ -15,13 +17,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/organizations/{organizationId}/projects/{projectId}/tasks")
+@RequestMapping("/api/v1/organizations/{organizationId}/projects/{projectId}/tasks")
 public class TaskController {
 
     private final TaskService taskService;
+    private final TaskMapper taskMapper;
 
-    public TaskController(TaskService taskService){
+    public TaskController(TaskService taskService, TaskMapper taskMapper){
         this.taskService = taskService;
+        this.taskMapper = taskMapper;
     }
 
     @PostMapping
@@ -31,12 +35,12 @@ public class TaskController {
             @Valid @RequestBody CreateTaskRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        TaskResponse response =
+        TaskResult result =
                 taskService.createTask(organizationId, projectId, request, userDetails.getUser());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(response);
+                .body(taskMapper.toResponseV1(result));
     }
 
     @PutMapping("/{taskId}")
@@ -47,10 +51,10 @@ public class TaskController {
             @Valid @RequestBody UpdateTaskRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        TaskResponse response =
+        TaskResult result =
                 taskService.updateTask(organizationId, projectId, taskId, request, userDetails.getUser());
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(taskMapper.toResponseV1(result));
     }
 
     @GetMapping
@@ -61,10 +65,10 @@ public class TaskController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             Pageable pageable
     ) {
-        Page<TaskResponse> responses =
+        Page<TaskResult> results =
                 taskService.getTasks(organizationId, projectId, status, userDetails.getUser(), pageable);
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(results.map(taskMapper::toResponseV1));
     }
 
     @DeleteMapping("{taskId}")

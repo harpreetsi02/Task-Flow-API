@@ -3,6 +3,7 @@ package com.backend.taskflowapi.service;
 import com.backend.taskflowapi.dto.request.CreateTaskRequest;
 import com.backend.taskflowapi.dto.request.UpdateTaskRequest;
 import com.backend.taskflowapi.dto.response.TaskResponse;
+import com.backend.taskflowapi.dto.response.TaskResult;
 import com.backend.taskflowapi.entity.*;
 import com.backend.taskflowapi.enums.TaskStatus;
 import com.backend.taskflowapi.exception.*;
@@ -46,7 +47,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponse createTask(
+    public TaskResult createTask(
             Long organizationId, Long projectId,
             CreateTaskRequest request, User currentUser
     ){
@@ -75,11 +76,11 @@ public class TaskService {
 
         taskRepository.save(task);
 
-        return taskMapper.toResponse(task);
+        return taskMapper.toResult(task);
     }
 
     @Transactional
-    public TaskResponse updateTask(
+    public TaskResult updateTask(
             Long organizationId, Long projectId,
             Long taskId, UpdateTaskRequest request, User currentUser
     ){
@@ -113,10 +114,10 @@ public class TaskService {
             webhookDispatchService.dispatchTaskCompleted(task);
         }
 
-        return taskMapper.toResponse(task);
+        return taskMapper.toResult(task);
     }
 
-    public Page<TaskResponse> getTasks(
+    public Page<TaskResult> getTasks(
             Long organizationId, Long projectId,
             TaskStatus status, User currentUser, Pageable pageable
     ){
@@ -129,7 +130,7 @@ public class TaskService {
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
 
         return taskRepository.findByProjectAndOptionalStatus(project, status, pageable)
-                .map(taskMapper::toResponse);
+                .map(taskMapper::toResult);
     }
 
     @Transactional

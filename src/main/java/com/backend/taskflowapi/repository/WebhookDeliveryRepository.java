@@ -19,7 +19,8 @@ public interface WebhookDeliveryRepository extends JpaRepository<WebhookDelivery
     void deleteBySubscription(WebhookSubscription subscription);
 
     @Query("SELECT d FROM WebhookDelivery d JOIN FETCH d.subscription " +
-            "WHERE d.status = :status AND d.nextAttemptAt <= :time")
+            "WHERE d.status = :stutas AND d.nextAttemptAt <= :time " +
+            "AND d.subscription.active = true")
     List<WebhookDelivery> findDueDeliveries(
             @Param("status") WebhookDeliveryStatus status,
             @Param("time") LocalDateTime time

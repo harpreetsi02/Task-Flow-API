@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/organizations/{organizationId}/webhooks")
+@RequestMapping("/api/v1/organizations/{organizationId}/webhooks")
 public class WebhookController {
 
     private final WebhookSubscriptionService webhookSubscriptionService;

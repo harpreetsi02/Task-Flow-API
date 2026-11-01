@@ -14,7 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/organizations/{organizationId}/projects")
+@RequestMapping("/api/v1/organizations/{organizationId}/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
