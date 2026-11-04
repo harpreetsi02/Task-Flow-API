@@ -15,7 +15,9 @@ public interface ApiKeyRepository extends JpaRepository<ApiKey, Long> {
 
     Optional<ApiKey> findByIdAndOrganization(Long id, Organization organization);
 
-    @Query("SELECT k FROM ApiKey k JOIN FETCH k.createdBy " +
+    @Query("SELECT k FROM ApiKey k " +
+            "JOIN FETCH k.createdBy " +
+            "JOIN FETCH k.organization " +
             "WHERE k.keyHash = :hash AND k.revoked = false")
     Optional<ApiKey> findActiveByKeyHash(@Param("hash") String hash);
 }

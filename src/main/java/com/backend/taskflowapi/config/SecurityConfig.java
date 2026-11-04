@@ -1,5 +1,6 @@
 package com.backend.taskflowapi.config;
 
+import com.backend.taskflowapi.security.ApiKeyAuthFilter;
 import com.backend.taskflowapi.security.JwtAuthFilter;
 import com.backend.taskflowapi.security.OAuth2LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
@@ -18,13 +19,16 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final ApiKeyAuthFilter apiKeyAuthFilter;
 
     public SecurityConfig(
             JwtAuthFilter jwtAuthFilter,
-            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+            ApiKeyAuthFilter apiKeyAuthFilter
     ){
         this.jwtAuthFilter = jwtAuthFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        this.apiKeyAuthFilter = apiKeyAuthFilter;
     }
 
     @Bean
@@ -47,7 +51,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2LoginSuccessHandler))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(apiKeyAuthFilter, JwtAuthFilter.class);
 
         return http.build();
     }
